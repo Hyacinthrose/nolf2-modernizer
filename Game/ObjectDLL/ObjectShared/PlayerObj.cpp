@@ -2851,6 +2851,7 @@ void CPlayerObj::UpdateVehicleMovement()
 	switch( m_ePPhysicsModel )
 	{
 		case PPM_SNOWMOBILE:
+		case PPM_MOTORCYCLE:
 		{
 			if( g_pLTServer->GetTime() - m_fLastVehicleFootstepTime > 0.1f )
 			{
@@ -7328,6 +7329,7 @@ void CPlayerObj::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bUpdateClient
 	switch (eModel)
 	{
 		case PPM_SNOWMOBILE:
+		case PPM_MOTORCYCLE:
 		case PPM_LIGHTCYCLE:
 			SetVehiclePhysicsModel(eModel);
 		break;
@@ -7345,7 +7347,7 @@ void CPlayerObj::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bUpdateClient
 
     uint32 dwUserFlags = 0;
 
-	if (m_ePPhysicsModel == PPM_SNOWMOBILE)
+	if( (m_ePPhysicsModel == PPM_SNOWMOBILE) || (m_ePPhysicsModel == PPM_MOTORCYCLE) )
 	{
 		dwUserFlags |= USRFLG_PLAYER_SNOWMOBILE;
 	}

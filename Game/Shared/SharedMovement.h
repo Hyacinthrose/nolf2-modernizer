@@ -21,7 +21,8 @@ enum PlayerPhysicsModel
 	PPM_NORMAL=0,
 	PPM_SNOWMOBILE,
 	PPM_LURE,
-	PPM_LIGHTCYCLE,
+	PPM_MOTORCYCLE,
+	PPM_LIGHTCYCLE,	
 	PPM_NUM_MODELS
 };
 
@@ -32,6 +33,7 @@ inline LTBOOL IsVehicleModel(PlayerPhysicsModel eModel)
 		case PPM_SNOWMOBILE :
 		case PPM_LURE :
 		case PPM_LIGHTCYCLE :
+		case PPM_MOTORCYCLE :
             return LTTRUE;
 		break;
 

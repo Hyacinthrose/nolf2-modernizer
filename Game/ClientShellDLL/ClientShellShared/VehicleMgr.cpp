@@ -134,6 +134,24 @@ VarTrack	g_vtVehicleCamContourMaxRotation;
 VarTrack	g_vtVehicleContourRate;
 VarTrack	g_vtVehicleContour;
 
+VarTrack          g_vtMotorcycleInfoTrack;
+VarTrack          g_vtMotorcycleVel;
+VarTrack          g_vtMotorcycleAccel;
+VarTrack          g_vtMotorcycleAccelTime;
+VarTrack          g_vtMotorcycleMaxDecel;
+VarTrack          g_vtMotorcycleDecel;
+VarTrack          g_vtMotorcycleDecelTime;
+VarTrack          g_vtMotorcycleMaxBrake;
+VarTrack          g_vtMotorcycleBrakeTime;
+VarTrack          g_vtMotorcycleOffsetX;
+VarTrack          g_vtMotorcycleOffsetY;
+VarTrack          g_vtMotorcycleOffsetZ;
+VarTrack          g_vtMotorcycleStoppedPercent;
+VarTrack          g_vtMotorcycleStoppedTurnPercent;
+VarTrack          g_vtMotorcycleMaxSpeedPercent;
+VarTrack          g_vtMotorcycleAccelGearChange;
+VarTrack          g_vtMotorcycleMinTurnAccel;   
+
 // ----------------------------------------------------------------------- //
 //
 //	ROUTINE:	ModelNodeControlFn
@@ -308,6 +326,26 @@ LTBOOL CVehicleMgr::Init()
 	g_vtVehicleContourRate.Init( g_pLTClient, "VehicleContourRate", LTNULL, 0.4f );
 	g_vtVehicleContour.Init( g_pLTClient, "VehicleContour", LTNULL, 1.0f );
 
+g_vtMotorcycleInfoTrack.Init( g_pLTClient, "MotorcycleInfo", NULL, 0.0f );
+g_vtMotorcycleVel.Init( g_pLTClient, "MotorcycleVel", NULL, 600.0f );
+g_vtMotorcycleAccel.Init( g_pLTClient, "MotorcycleAccel", NULL, 3000.0f );
+g_vtMotorcycleAccelTime.Init( g_pLTClient, "MotorcycleAccelTime", NULL, 3.0f );
+g_vtMotorcycleMaxDecel.Init( g_pLTClient, "MotorcycleDecelMax", LTNULL, 22.5f );
+g_vtMotorcycleDecel.Init( g_pLTClient, "MotorcycleDecel", LTNULL, 37.5f );
+g_vtMotorcycleDecelTime.Init( g_pLTClient, "MotorcycleDecelTime", LTNULL, 0.5f );
+g_vtMotorcycleMaxBrake.Init( g_pLTClient, "MotorcycleBrakeMax", LTNULL, 112.5f );
+g_vtMotorcycleBrakeTime.Init( g_pLTClient, "MotorcycleBrakeTime", LTNULL, 1.0f );
+g_vtMotorcycleMinTurnAccel.Init( g_pLTClient, "MotorcycleMinTurnAccel", LTNULL, 0.0f );
+
+g_vtMotorcycleOffsetX.Init( g_pLTClient, "MotorcycleOffsetX", LTNULL, 0.0f );
+g_vtMotorcycleOffsetY.Init( g_pLTClient, "MotorcycleOffsetY", LTNULL, -0.8f );
+g_vtMotorcycleOffsetZ.Init( g_pLTClient, "MotorcycleOffsetZ", LTNULL, 0.6f );
+
+g_vtMotorcycleStoppedPercent.Init( g_pLTClient, "MotorcycleStoppedPercent", LTNULL, 0.05f );
+g_vtMotorcycleMaxSpeedPercent.Init( g_pLTClient, "MotorcycleMaxSpeedPercent", LTNULL, 0.95f );
+g_vtMotorcycleAccelGearChange.Init( g_pLTClient, "MotorcycleAccelGearChange", LTNULL, 1.0f );
+
+
 	m_VehicleModelOffsetMgr.Init();
 
 	// Init world specific data members...
@@ -460,6 +498,7 @@ void CVehicleMgr::UpdateControlFlags()
 
 	switch (m_ePPhysicsModel)
 	{
+		case PPM_MOTORCYCLE :
 		case PPM_SNOWMOBILE :
 			UpdateSnowmobileControlFlags();
 		break;
@@ -667,8 +706,10 @@ void CVehicleMgr::UpdateMotion()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
+		case PPM_MOTORCYCLE :
 			UpdateVehicleMotion();
 		break;
+
 
 		case PPM_LURE :
 			UpdateLureMotion( );
@@ -722,6 +763,7 @@ void CVehicleMgr::UpdateVehicleGear()
 {
  	switch (m_ePPhysicsModel)
 	{
+		case PPM_MOTORCYCLE :		
 		case PPM_SNOWMOBILE :
 			UpdateSnowmobileGear();
 		break;
@@ -749,6 +791,10 @@ void CVehicleMgr::UpdateSound()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
+			UpdateVehicleSounds();
+		break;
+
+		case PPM_MOTORCYCLE :
 			UpdateVehicleSounds();
 		break;
 
@@ -1059,6 +1105,10 @@ LTFLOAT	CVehicleMgr::GetVehicleAccelTime()
 			fTime = g_vtSnowmobileAccelTime.GetFloat();
 		break;
 
+		case PPM_MOTORCYCLE :
+			fTime = g_vtMotorcycleAccelTime.GetFloat();
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -1088,6 +1138,10 @@ LTFLOAT	CVehicleMgr::GetVehicleMinTurnAccel()
 			fValue = g_vtSnowmobileMinTurnAccel.GetFloat();
 		break;
 
+		case PPM_MOTORCYCLE :
+			fValue = g_vtMotorcycleMinTurnAccel.GetFloat();
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -1117,6 +1171,10 @@ LTFLOAT	CVehicleMgr::GetVehicleMaxDecel()
 			fValue = g_vtSnowmobileMaxDecel.GetFloat();
 		break;
 
+		case PPM_MOTORCYCLE :
+			fValue = g_vtMotorcycleMaxDecel.GetFloat();
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -1146,6 +1204,10 @@ LTFLOAT	CVehicleMgr::GetVehicleDecelTime()
 			fValue = g_vtSnowmobileDecelTime.GetFloat();
 		break;
 
+		case PPM_MOTORCYCLE :
+			fValue = g_vtMotorcycleDecelTime.GetFloat();
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -1175,6 +1237,10 @@ LTFLOAT	CVehicleMgr::GetVehicleMaxBrake()
 			fValue = g_vtSnowmobileMaxBrake.GetFloat();
 		break;
 
+		case PPM_MOTORCYCLE :
+			fValue = g_vtMotorcycleMaxBrake.GetFloat();
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -1204,6 +1270,10 @@ LTFLOAT	CVehicleMgr::GetVehicleBrakeTime()
 			fValue = g_vtSnowmobileBrakeTime.GetFloat();
 		break;
 
+		case PPM_MOTORCYCLE :
+			fValue = g_vtMotorcycleBrakeTime.GetFloat();
+		break;
+
 		case PPM_LURE :
 		break;
 
@@ -1229,6 +1299,7 @@ void CVehicleMgr::UpdateFriction()
 	switch (m_ePPhysicsModel)
 	{
 		case PPM_SNOWMOBILE :
+		case PPM_MOTORCYCLE :
 			UpdateVehicleFriction(SNOWMOBILE_SLIDE_TO_STOP_TIME);
 		break;
 
@@ -1407,6 +1478,10 @@ LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
 				EnableWeapon( false );
 			break;
 
+			case PPM_MOTORCYCLE :
+				EnableWeapon( false );
+			break;
+			
 			case PPM_LURE :
 			case PPM_NORMAL :
 			default :
@@ -1443,6 +1518,20 @@ LTBOOL CVehicleMgr::PreSetPhysicsModel(PlayerPhysicsModel eModel)
 			}
 			break;
 
+			case PPM_MOTORCYCLE :
+			{
+				g_pClientSoundMgr->PlaySoundLocal("Snd\\Vehicle\\Motorcycle\\turnoff.wav", SOUNDPRIORITY_PLAYER_HIGH, PLAYSOUND_CLIENT);
+
+				PlayVehicleAni("Deselect");
+
+				// Can't move until deselect is done...
+				g_pMoveMgr->AllowMovement(LTFALSE);
+
+				// Wait to change modes...
+				bRet = LTFALSE;
+			}
+			break;
+			
 			case PPM_LURE :
 			{
 				// Enable the weapon.
@@ -1490,6 +1579,12 @@ void CVehicleMgr::SetPhysicsModel(PlayerPhysicsModel eModel, LTBOOL bDoPreSet)
 			{
 				g_pLTClient->CPrint("Snowmobile Physics Mode: ON");
 			}
+		}
+		break;
+
+		case PPM_MOTORCYCLE:
+		{
+			SetMotorcyclePhysicsModel();
 		}
 		break;
 
@@ -1599,6 +1694,46 @@ void CVehicleMgr::SetSnowmobilePhysicsModel()
 	m_vVehicleOffset.x = g_vtSnowmobileOffsetX.GetFloat();
 	m_vVehicleOffset.y = g_vtSnowmobileOffsetY.GetFloat();
 	m_vVehicleOffset.z = g_vtSnowmobileOffsetZ.GetFloat();
+
+	// Reset acceleration so we don't start off moving...
+
+	m_fVehicleBaseMoveAccel = 0.0f;
+
+ 	ShowVehicleModel(LTTRUE);
+
+	PlayVehicleAni("Select");
+
+	// Can't move until select ani is done...
+
+	g_pMoveMgr->AllowMovement(LTFALSE);
+
+	m_bSetLastAngles = false;
+	m_vLastPlayerAngles.Init();
+	m_vLastCameraAngles.Init();
+	m_vLastVehiclePYR.Init();
+}
+
+// ----------------------------------------------------------------------- //
+//
+//	ROUTINE:	CVehicleMgr::SetMotorcyclePhysicsModel
+//
+//	PURPOSE:	Set the motorcycle physics model
+//
+// ----------------------------------------------------------------------- //
+
+void CVehicleMgr::SetMotorcyclePhysicsModel()
+{
+	if (!m_hVehicleStartSnd)
+	{
+        uint32 dwFlags = PLAYSOUND_GETHANDLE | PLAYSOUND_CLIENT;
+		m_hVehicleStartSnd = g_pClientSoundMgr->PlaySoundLocal("Snd\\Vehicle\\Motorcycle\\startup.wav", SOUNDPRIORITY_PLAYER_HIGH, dwFlags);
+	}
+
+	CreateVehicleModel();
+
+	m_vVehicleOffset.x = g_vtMotorcycleOffsetX.GetFloat();
+	m_vVehicleOffset.y = g_vtMotorcycleOffsetY.GetFloat();
+	m_vVehicleOffset.z = g_vtMotorcycleOffsetZ.GetFloat();
 
 	// Reset acceleration so we don't start off moving...
 
@@ -1752,6 +1887,26 @@ void CVehicleMgr::CreateVehicleModel()
 		}
 		break;
 
+        case PPM_MOTORCYCLE:
+		{
+		createStruct.m_ObjectType = OT_MODEL;
+		createStruct.m_Flags     = FLAG_VISIBLE | FLAG_REALLYCLOSE;
+		createStruct.m_Flags2   = FLAG2_FORCETRANSLUCENT | FLAG2_DYNAMICDIRLIGHT;
+
+		SAFE_STRCPY(createStruct.m_Filename, "Guns\\Models_PV\\ Motorcycle.ltb");
+		SAFE_STRCPY(createStruct.m_SkinNames[1], "Guns\\Skins_PV\\ Motorcycle.dtx");
+		SAFE_STRCPY(createStruct.m_RenderStyleNames[0], "RS\\default.ltb");
+
+		CCharacterFX* pCharFX = g_pMoveMgr->GetCharacterFX();
+
+			if (pCharFX  )
+			{
+
+                SAFE_STRCPY(createStruct.m_SkinNames[0], g_pModelButeMgr->GetHandsSkinFilename(pCharFX->GetModelId()));
+			}
+		}
+		break;
+
 		default :
 			return;
 		break;
@@ -1851,7 +2006,7 @@ void CVehicleMgr::UpdateModels()
 
 void CVehicleMgr::UpdateVehicleModel()
 {
-	if (!m_hVehicleModel || (m_ePPhysicsModel != PPM_SNOWMOBILE) ) return;
+            if (!m_hVehicleModel || ((m_ePPhysicsModel != PPM_SNOWMOBILE) && (m_ePPhysicsModel != PPM_MOTORCYCLE)) ) return;
 
 	//See if we are paused, if so we need to pause the animation...
 
@@ -1974,6 +2129,12 @@ LTFLOAT CVehicleMgr::GetMaxVelMag(LTFLOAT fMult) const
 		}
 		break;
 
+		case PPM_MOTORCYCLE :
+		{
+			fMaxVel = g_vtMotorcycleVel.GetFloat();
+		}
+		break;
+		
 		case PPM_LIGHTCYCLE:
 		{
 			fMaxVel = g_vtLightCycleVel.GetFloat();
@@ -2018,6 +2179,12 @@ LTFLOAT CVehicleMgr::GetMaxAccelMag(LTFLOAT fMult) const
 		}
 		break;
 
+		case PPM_MOTORCYCLE :
+		{
+			fMaxVel = g_vtMotorcycleAccel.GetFloat();
+		}
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -2261,6 +2428,10 @@ char* CVehicleMgr::GetIdleSnd()
 		case PPM_SNOWMOBILE :
 			return "Snd\\Vehicle\\Snowmobile\\idle.wav";
 		break;
+		
+		case PPM_MOTORCYCLE :
+			return "Snd\\Vehicle\\Motorcycle\\idle.wav";
+		break;
 
 		case PPM_LURE :
 		break;
@@ -2289,6 +2460,10 @@ char* CVehicleMgr::GetAccelSnd()
 			return "Snd\\Vehicle\\Snowmobile\\accel.wav";
 		break;
 
+		case PPM_MOTORCYCLE :
+			return "Snd\\Vehicle\\Motorcycle\\accel.wav";
+		break;
+		
 		case PPM_LURE :
 			return "Snd\\Vehicle\\bicycle\\accel.wav";
 		break;
@@ -2317,6 +2492,10 @@ char* CVehicleMgr::GetDecelSnd()
 			return "Snd\\Vehicle\\Snowmobile\\decel.wav";
 		break;
 
+		case PPM_MOTORCYCLE :
+			return "Snd\\Vehicle\\Motorcycle\\decel.wav";
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -2344,6 +2523,10 @@ char* CVehicleMgr::GetBrakeSnd()
 			return "Snd\\Vehicle\\Snowmobile\\brake.wav";
 		break;
 
+		case PPM_MOTORCYCLE :
+			return "Snd\\Vehicle\\Motorcycle\\brake.wav";
+		break;
+		
 		case PPM_LURE :
 		break;
 
@@ -2405,6 +2588,23 @@ char* CVehicleMgr::GetImpactSnd(LTFLOAT fCurVelocityPercent, SURFACE* pSurface)
 			}
 			break;
 
+			case PPM_MOTORCYCLE :
+			{
+				if (fCurVelocityPercent > 0.1f && fCurVelocityPercent < 0.4f)
+				{
+					pSound = "Snd\\Vehicle\\Motorcycle\\slowimpact.wav";
+				}
+				else if (fCurVelocityPercent < 0.7f)
+				{
+					pSound = "Snd\\Vehicle\\Motorcycle\\medimpact.wav";
+				}
+				else
+				{
+					pSound = "Snd\\Vehicle\\Motorcycle\\fastimpact.wav";
+				}
+			}
+			break;
+			
 			case PPM_LURE :
 			break;
 
@@ -3298,6 +3498,11 @@ void CVehicleMgr::CalculateVehicleRotation(LTVector & vPlayerPYR,
 			CalculateVehicleContourRotation( vPlayerPYR, vPYR );
 			break;
 
+		case PPM_MOTORCYCLE:
+			CalculateBankingVehicleRotation( vPlayerPYR, vPYR, fYawDelta );
+			CalculateVehicleContourRotation( vPlayerPYR, vPYR );
+			break;
+			
 		case PPM_LURE:
 			CalculateLureVehicleRotation( vPlayerPYR, vPYR );
 			break;
@@ -3428,6 +3633,7 @@ void CVehicleMgr::CalculateVehicleCameraDisplacment( LTVector& vDisplacement )
 
 		case PPM_NORMAL:
 		case PPM_SNOWMOBILE:
+		case PPM_MOTORCYCLE:
 		case PPM_LIGHTCYCLE:
 			return;
 			break;
@@ -3810,6 +4016,7 @@ bool CVehicleMgr::MoveLocalSolidObject( )
 		// These guys don't handle movement.
 		case PPM_NORMAL:
 		case PPM_SNOWMOBILE:
+		case PPM_MOTORCYCLE:
 			return false;
 			break;
 
@@ -4428,6 +4635,7 @@ void CVehicleMgr::MoveVehicleObject( LTVector &vPos )
 	{
 		// These guys don't handle movement.
 		case PPM_SNOWMOBILE:
+		case PPM_MOTORCYCLE:
 		{
 			HOBJECT hObj = g_pMoveMgr->GetObject();
 

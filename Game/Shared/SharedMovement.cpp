@@ -21,6 +21,7 @@ char* aPPMStrings[] =
 	"Snowmobile",
 	"Lure",
 	"LightCycle"
+	"Motorcycle"
 };
 
 char* GetPropertyNameFromPlayerPhysicsModel(PlayerPhysicsModel ePPModel)

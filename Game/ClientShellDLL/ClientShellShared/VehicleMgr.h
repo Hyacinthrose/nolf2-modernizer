@@ -148,7 +148,8 @@ class CVehicleMgr
 	void		SetSnowmobilePhysicsModel();
 	void		SetPlayerLurePhysicsModel( );
 	void		SetNormalPhysicsModel();
-
+	void		SetMotorcyclePhysicsModel();
+	
 	void		CreateVehicleModel();
 	void		UpdateVehicleModel();
 	void		UpdateVehicleFriction(LTFLOAT fSlideToStopTime);
